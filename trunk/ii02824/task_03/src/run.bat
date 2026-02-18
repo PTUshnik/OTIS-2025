@@ -55,6 +55,8 @@ if exist "%MAIN_EXE%" (
 echo ERROR: main binary not found: %MAIN_EXE%
 )
 
+start https://topg1616.github.io/OTIS-2025/
+
 echo.
 echo === DONE: build + tests + run + docs ===
 
