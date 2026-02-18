@@ -1,6 +1,8 @@
 #include <iostream>
 #include "models.h"
 #include "pid.h"
+#include <fstream>
+#include <cstdlib>
 
 
 int main()
@@ -40,6 +42,13 @@ int main()
     double y_prev = 0;
     double u_prev = 0;
 
+    std::ofstream csv("results.csv");
+    if (!csv.is_open()) {
+        std::cerr << "Error: cannot create results.csv\n";
+        return 1;
+    }
+    csv << "step,e,u,y_lin,y_nonlin\n";
+
     for (int i = 0; i < n; i++)
     {
         e = w - y;              ///< вычисление значение отклонения 
@@ -51,12 +60,25 @@ int main()
         y_prev = y_nl;
         u_prev = u;
 
-        std::cout << "Step " << i + 1 
-                  << " - e = " << e 
-                  << ", u = " << u 
-                  << ", y_lin = " << y 
-                  << ", y_nonlin = " << y_nl 
-                  << ";\n";
+        std::cout << "Step " << i + 1
+            << " - e = " << e
+            << ", u = " << u
+            << ", y_lin = " << y
+            << ", y_nonlin = " << y_nl
+            << ";\n";
+
+        csv << i + 1 << "," << e << "," << u << "," << y << "," << y_nl << "\n";
+
+    }
+
+    csv.close();
+    std::cout << "\nResults saved to results.csv\n";
+
+    std::cout << "Launching Python plotter...\n";
+    int result = system("python plot_results.py results.csv");
+    if (result != 0) {
+        std::cerr << "Failed to run Python script.\n"
+            << "Make sure Python is installed, matplotlib is available, and plot_results.py is in the same folder.\n";
     }
 
     return 0;

@@ -1,36 +1,57 @@
 cmake_minimum_required(VERSION 3.14)
-project(task_03_2824)
+project(ii002824_task_03 LANGUAGES CXX)
 
+# General settings
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Strict warnings
+if(MSVC)
+    add_compile_options(/W4 /permissive-)
+else()
+    add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
+# Paths
+set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../test)
+set(DOC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../doc)
+
+# Project libraries
+add_library(model_ii002824 STATIC ${SRC_DIR}/models.cpp)
+target_include_directories(model_ii002824 PUBLIC ${SRC_DIR})
+
+add_library(pid_ii002824 STATIC ${SRC_DIR}/pid.cpp)
+target_include_directories(pid_ii002824 PUBLIC ${SRC_DIR})
+
+# Main executable
+add_executable(pid_sim_ii002824 ${SRC_DIR}/main.cpp)
+target_link_libraries(pid_sim_ii002824 PRIVATE pid_ii002824 model_ii002824)
+
+# Google Test
 include(FetchContent)
-
 FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+    googletest
+    URL https://github.com/google/googletest/archive/refs/tags/v1.15.2.zip
 )
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 enable_testing()
-
-add_executable(
-  my_tests_2824
-  ${CMAKE_CURRENT_SOURCE_DIR}/models.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/pid.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/../test/test.cpp
-)
-
-target_include_directories(my_tests_2824 PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src
-    ${CMAKE_CURRENT_SOURCE_DIR}/../test
-)
-
-target_link_libraries(
-  my_tests_2824
-  GTest::gtest_main
-)
-
 include(GoogleTest)
-gtest_discover_tests(my_tests_2824)
+
+# Tests
+file(GLOB TEST_SOURCES "${TEST_DIR}/*.cpp")
+if(TEST_SOURCES)
+    add_executable(runTests_ii002824_task03 ${TEST_SOURCES})
+    target_link_libraries(runTests_ii002824_task03 PRIVATE gtest_main pid_ii002824 model_ii002824)
+    gtest_discover_tests(runTests_ii002824_task03)
+else()
+    message(WARNING "Test files not found in ${TEST_DIR}")
+endif()
+
+# Documentation
+# Note: Doxygen / local HTML documentation is no longer generated via CMake.
+#       All documentation is now hosted externally on GitHub Pages:
+#       https://topg1616.github.io/OTIS-2025/
